@@ -3,7 +3,9 @@ import pprint
 from bs4 import BeautifulSoup
 from lxml import etree
 
-def search_book(query, author="", page=0):
+def search_book(query, author=""):
+	page = 0
+
 	search_params = {
 		"tx_drahsdbsearch_hsdbsearch[__referrer][@extension]": "DraHsdbsearch",
 		"tx_drahsdbsearch_hsdbsearch[__referrer][@controller]": "Search",
@@ -48,7 +50,7 @@ def search_book(query, author="", page=0):
 		# "tx_drahsdbsearch_hsdbsearch[search][mehrteilertitel]": "",
 		# "tx_drahsdbsearch_hsdbsearch[search][sort]": "",
 		# "tx_drahsdbsearch_hsdbsearch[search][sortkey]": "dat",
-		"tx_drahsdbsearch_hsdbsearch[search][seite]": str(page),
+		"tx_drahsdbsearch_hsdbsearch[search][seite]": "0",
 	}
 
 	search_url = "https://hoerspiele.dra.de/suche/"
@@ -67,10 +69,12 @@ def search_book(query, author="", page=0):
 	audiobook_results = []
 
 	for page_num in range(0, page_count):
-		page = page_num
+		print("page ", page_num)
+
 		search_url = "https://hoerspiele.dra.de/suche/"
 
 		# Make initial request
+		search_params["tx_drahsdbsearch_hsdbsearch[search][seite]"] = str(page_num)
 		search_results = requests.post(search_url, data=search_params)
 
 		if search_results.status_code == 200:
@@ -96,7 +100,7 @@ def search_book(query, author="", page=0):
 	return audiobook_results
 
 
-result_books = search_book(query="Steppenwolf")
+result_books = search_book(query="Steppenwolf", author="")
 pprint.pprint(result_books)
 print(len(result_books))
 
