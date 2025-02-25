@@ -3,6 +3,39 @@ import pprint
 from bs4 import BeautifulSoup
 from lxml import etree
 
+def get_single_book(id):
+	url = "https://hoerspiele.dra.de/detailansicht/"
+
+	book_page = requests.get(url + str(id))
+
+	if book_page.status_code == 200:
+		soup = BeautifulSoup(book_page.content, "html.parser")
+
+	book = {}
+
+	book["title"] = soup.find('h1', class_="ti").get_text()
+	book["author"] = soup.find_all('a', {'data-id': 'autor'})[0].get_text()
+	book["description"] = soup.find_all('p', class_="cuttext")[0].get_text()
+	book["cover"] = "https://hoerspiele.dra.de/" + soup.find('div', class_="column is-one-third").find('figure', class_="image").find('img')['src']
+
+	book["publisher"] = soup.find("strong", string="Produktions- und Sendedaten").parent.parent.find_all('li')[0].get_text()
+
+	date_string = soup.find("strong", string="Produktions- und Sendedaten").parent.parent.find_all('li')[1].get_text()
+
+	book["publishedYear"] = date_string.split("|")[0].split(":")[1].strip().split(".")[-1]
+
+	book["type"] = ""
+
+	try:
+		series = {}
+		series["series"] = soup.find('strong', string="Reihentitel:").parent.find('a', {'data-id': 'titel'}).get_text()
+		book["series"] = [series]
+	except AttributeError:
+		pass
+
+	return book
+
+
 def search_book(query, author=""):
 	page = 0
 
@@ -66,7 +99,7 @@ def search_book(query, author=""):
 	# We waste one request to get the page count
 	page_count = len(soup.find('div', class_='pager').get_text().strip().splitlines())
 
-	audiobook_results = []
+	audiobook_search_results = []
 
 	for page_num in range(0, page_count):
 		print("page ", page_num)
@@ -88,19 +121,19 @@ def search_book(query, author=""):
 			# Titel, Autor, Produktion, Datum, Gattung
 			book["title"] = parsed_row[0].get_text()
 			book["author"] = parsed_row[1].get_text()
-			book["production"] = parsed_row[2].get_text()
-			book["date"] = parsed_row[3].get_text()
-			book["type"] = parsed_row[4].find('img').get('title')
-			audiobook_results.append(book)
+			book["detail"] = parsed_row[0].find('a').get('href').split('/')[-1]
+			audiobook_search_results.append(book)
 
 	page_count = len(soup.find('div', class_='pager').get_text().strip().splitlines())
-	print(page_count)
 
+	# Get details for all books
+	audiobooks_detail = []
+	for book in audiobook_search_results:
+		audiobooks_detail.append(get_single_book(book["detail"]))
 
-	return audiobook_results
+	return audiobooks_detail
 
-
-result_books = search_book(query="Steppenwolf", author="")
-pprint.pprint(result_books)
-print(len(result_books))
-
+if __name__ == '__main__':
+	#get_single_book(1428095)
+	#get_single_book(5036211)
+	pprint.pprint(len(search_book(query="Steppenwolf")))
