@@ -1,13 +1,12 @@
 from fastapi import FastAPI
+from ard_lib import search_book
 
 app = FastAPI()
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+@app.get("/search")
+def search(query: str, author: str = ""):
+    results = search_book(query=query, author=author)
+    return results
 
 
-@app.get("/hello/{name}")
-async def say_hello(name: str):
-    return {"message": f"Hello {name}"}
