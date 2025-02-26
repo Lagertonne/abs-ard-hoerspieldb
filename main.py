@@ -5,7 +5,7 @@ app = FastAPI()
 
 
 @app.get("/search")
-def search(query: str, author: str = ""):
+def search(query: str, author: str = "", mediaType: str = ""):
     results = search_book(query=query, author=author)
     return results
 
