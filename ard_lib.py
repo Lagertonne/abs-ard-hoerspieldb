@@ -102,8 +102,6 @@ def search_book(query, author=""):
 	audiobook_search_results = []
 
 	for page_num in range(0, page_count):
-		print("page ", page_num)
-
 		search_url = "https://hoerspiele.dra.de/suche/"
 
 		# Make initial request
@@ -136,4 +134,4 @@ def search_book(query, author=""):
 if __name__ == '__main__':
 	#get_single_book(1428095)
 	#get_single_book(5036211)
-	pprint.pprint(len(search_book(query="Steppenwolf")))
+	pprint.pprint(len(search_book(query="Der letzte Detektiv 40 mafia")))
